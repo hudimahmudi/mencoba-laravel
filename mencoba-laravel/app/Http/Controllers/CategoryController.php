@@ -59,7 +59,7 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(category $category)
     {
         $title = 'Edit Kategori || PPKD Sticker';
         return view('admin.category.edit', compact('category', 'title'));
