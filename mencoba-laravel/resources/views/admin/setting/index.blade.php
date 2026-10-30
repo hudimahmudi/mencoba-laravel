@@ -43,13 +43,15 @@
                 </div>
                 <div class="mb-3">
                   <label for="" class="form-label">Deskripsi Singkat</label>
-                  <textarea name="site_description" id="" cols="30" rows="10" class="form-control" value="{{ old('site_description', $setting['site_description']->value) }}"></textarea>
+                  <textarea name="site_description" id="" cols="30" rows="10" class="form-control" >{{ old('site_description', $setting['site_description']->value) }}</textarea>
                 </div>
                 <div class="mb-3">
                   <label for="" class="form-label">Logo Utama Website</label>
-                  <input type="file"  name="site_logo" value="{{ old('site_logo', $setting['site_logo']->value) }}" >
+                  <input type="file" name="site_logo" accept="image/*" enctype="multipart/form-data">
                 </div>
-
+                <div>
+                  <img width="100" src="{{ asset("storage/" . $setting['site_logo']->value) }}" alt="Site Logo">
+                </div>
             </div>
             <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                 <h5 class="fw-bold text-main mb-3">Kontak & Lokasi</h5>
@@ -67,7 +69,7 @@
                 </div>
                  <div class="mb-3">
                   <label for="" class="form-label">Alamat</label>
-                  <textarea name="address" id="" cols="30" rows="10" class="form-control"></textarea>
+                  <textarea name="address" id="" cols="30" rows="10" class="form-control" >{{ old('address', $setting['address']->value) }}</textarea>
                 </div>
             </div>
             <div class="tab-pane fade" id="messages-tab-pane" role="tabpanel" aria-labelledby="messages-tab" tabindex="0">

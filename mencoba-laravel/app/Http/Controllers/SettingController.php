@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -18,7 +19,7 @@ class SettingController extends Controller
             'site_name' => 'nullable|string|max:255',
             'site_tagline' => 'nullable|string|max:255',
             'site_description' => 'nullable|string|max:255',
-            'site_logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'site_logo' => 'nullable',
 
             'phone' => 'nullable|string|max:100',
             'email_upload' => 'nullable|email|max:255',
@@ -32,6 +33,26 @@ class SettingController extends Controller
             'url_tiktok' => 'nullable|url|max:255',
 
         ]);
+
+        //membuat file upload
+        if ($request->hasFile('site_logo')) {
+            $setting = Setting::where('key', 'site_logo')->first();
+    
+                if($setting && $setting->value){
+                    Storage::disk('public')->delete($setting->value);
+                }
+                $path = $request->file('site_logo')->store('setting', 'public');
+
+                Setting::updateOrCreate(
+                      ['key' => 'site_logo'],
+                    [
+                        'value' => $path,
+                        'label' => 'sitelogo',
+                        'group' => 'general',
+                        'type' => 'image'
+                    ]
+                );
+        }
 
         $ignoreKeys = ['site_logo'];
 
