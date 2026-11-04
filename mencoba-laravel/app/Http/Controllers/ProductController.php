@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use GrahamCampbell\ResultType\Success;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Category;
+
 
 class ProductController extends Controller
 {
@@ -14,8 +15,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('category')->orderBy('id', 'DESC')->get();
-        return view ('admin.product.index', compact('products'));
+        $title = "Managemen Produk || PPKD Sticker";
+        $products = Product::with('category')->get();
+        // $category = Category::with('products')->count();
+        return view ('admin.product.index', compact('title', 'products'));
     }
 
     /**
@@ -23,8 +26,9 @@ class ProductController extends Controller
      */
     public function create()
     {
+        $title = "Tambah Produk || PPKD Stiker";
         $categories = Category::all();
-        return view('admin.product.create', compact('categories'));
+        return view('admin.product.create', compact('title','categories'));
     }
 
     /**
