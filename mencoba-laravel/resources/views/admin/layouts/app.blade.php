@@ -121,12 +121,17 @@
   <!-- Local dashboard interactions controller -->
   <script src="{{asset ('assets/js/dashboard.js')}}"></script>
 <!-- QUILLL -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
   <script>
   const quill = new Quill('#editor', {
     theme: 'snow'
   });
-</script> -->
+
+  quill.on('text-change', function(delta, oldDelta, source) {
+      document.querySelector("textarea[name='description']").value = quill.root.innerHTML;
+      console.log("textarea", quill.root.innerHTML)
+  });
+</script>
 </body>
 
 </html>

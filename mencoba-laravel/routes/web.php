@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MencobaController;
 
-Route::get('/',[\App\Http\Controllers\HomeController::class, 'index']);
 
 Route::get('belajar', [MencobaController::class, 'index']);
 // tambah-tambahan
@@ -32,5 +32,8 @@ Route::prefix('admin')->name('admin.')->group(function(){
     Route::get('/setting', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings');
     Route::post('/setting', [\App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
 
-    
 });
+
+Route::get('/',[\App\Http\Controllers\HomeController::class, 'index']);
+Route::get('/category/{slug}', [\App\Http\Controllers\CatalogController::class, 'category'])->name('category.show');
+Route::get('/product/{slug}', [\App\Http\Controllers\CatalogController::class, 'product'])->name('product.show');

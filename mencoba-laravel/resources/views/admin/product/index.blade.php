@@ -26,7 +26,7 @@
             <td>{{ $loop->iteration }}</td>
             <td>
               @if ($item->image !== null)
-                <img src="" {{ asset('storage/' . $item->image) }} width="100" alt="{{ $item->name ?? '' }}">
+                <img src={{ asset('storage/' . $item->image) }} width="100" alt="{{ $item->name ?? '' }}">
               @else
               <span class="text-muted">Gambar tidak ditemukan</span> 
               @endif 
