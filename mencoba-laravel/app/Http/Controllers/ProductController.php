@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use GrahamCampbell\ResultType\Success;
-use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -16,10 +16,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $title = "Managemen Produk || PPKD Sticker";
-        $products = Product::with('category')->get();
+        $title = 'Managemen Produk || PPKD Sticker';
+        $products = Product::with('category', 'images')->get();
         // $category = Category::with('products')->count();
-        return view ('admin.product.index', compact('title', 'products'));
+
+        return view('admin.product.index', compact('title', 'products'));
     }
 
     /**
@@ -27,9 +28,10 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $title = "Tambah Produk || PPKD Stiker";
-        $categories = Category::all();
-        return view('admin.product.create', compact('title','categories'));
+        $title = 'Tambah Product || PPKD Sricker';
+        $categories = Category::get();
+
+        return view('admin.product.create', compact('title', 'categories'));
     }
 
     /**
@@ -37,66 +39,92 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-       $validated=$request->validate([
+        $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|mimes:png,jpg,jpeg,gif|max:2048',
-            'name' => 'nullable|string|max:60',
-            'slug' => 'nullable|string|unique:products,slug',
-            'price' => 'nullable|integer|min:0',
-            'price_art_cartoon' => 'nullable|integer|min:0',
-            'price_art_paper' => 'nullable|integer|min:0',
-            'price_art_hvs' => 'nullable|integer|min:0',
-            'price_doft' => 'nullable|integer|min:0',
-            'price_glossy' => 'nullable|integer|min:0',
-            'cutting_price' => 'nullable|integer|min:0',
-            'brief_description' =>'nullable|string',
+            'name' => 'required|string|max:60',
+            'slug' => 'nullable|string|max:60|unique:products,slug',
+            'price' => 'required|numeric',
+            'brief_description' => 'nullable|string',
             'description' => 'nullable|string',
+            'price_art_cartoon' => 'nullable|numeric',
+            'price_art_paper' => 'nullable|numeric',
+            'price_art_hvs' => 'nullable|numeric',
+            'price_doft' => 'nullable|numeric',
+            'price_glossy' => 'nullable|numeric',
+            'cutting_price' => 'nullable|numeric',
 
-            //validasi product image
             'images' => 'nullable|array',
-            'images.*' => 'images|mimes:png,jpg,jpeg,webp|max:2048',
-            'alt' =>'nullable|array',
-            'alt.*' =>'nullable|string|max:255',
-            'sort_order' => 'nullable|integer',
-
+            'images.*' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'alt' => 'nullable|array',
+            'alt.*' => 'nullable|string|max:255',
         ]);
 
-        //product, product images
-        DB::transaction(function() use($request, $validated){
-            $product = Product::create([
-                'category_id' =>$validated['category_id'],
+        // dd($request->images);
+
+        //buat nambah gambar+produk barisan 64-88#byZidan // kalau dari pak tri di barisan 86-108 di vc nya
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $arrImage = [];
+            $image= null;
+
+              $product = Product::create([
+                'category_id' => $validated['category_id'],
                 'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'image' => null,
+                'price_art_paper' => $validated['price_art_paper'],
+                'description' => $validated['description'],
+                'brief_description' => $validated['brief_description'],
+                'price_art_cartoon' => $validated['price_art_cartoon'],
+                'price_art_hvs' => $validated['price_art_hvs'] ?? null,
+                'price_doft' => $validated['price_doft'],
+                'price_glossy' => $validated['price_glossy'],
+                'cutting_price' => $validated['cutting_price'],
+                'price' => $validated['price'],
             ]);
-            if($request->hasFile('images')){
-                $imageData= [];
-                foreach ($request->file('images') as $key => $file) {
-                    $path =$file->store('products', 'public');
 
-                    $imageData[] =[
-                        'path' => $path,
-                        'alt' => $request->input('alt.{$key}') ?? $product->name,
-                        'sort_order' => $key + 1,
-                    ];
+            if ($request->has('images') && is_array($request->images)) {
+                if (count($request->images) > 0) {
+                    foreach ($request->images as $key => $image) {
+                        if ($request->hasFile('images.' . $key)) {
+                            $path = $image->store('products', 'public');
+                            if ($key === 0) {
+                                $image = $path;
+                            }
+
+                            $arrImage[] = [
+                                'path' => $path,
+                                'alt' => 'Contoh alt ' . $key,
+                                'sort_order' => $key
+                            ];
+                        }
+                    }
                 }
-                $product->images()->createMany($imageData);
             }
-        });
 
-        return redirect()->route('admin.product.index')->with('success', 'Produk berhasil ditambahkan');
+          
 
-        // $imagePath = null;
-        // if($request->image){
-        //     $imagePath = $request->file('image')->store('products', 'public');
-        // }
 
-        // Product::create([
-        //     'category_id' => $request->category_id,
-        //     'image'=>$imagePath,
-        //     'name'=>$request->name,
-        //     'slug'=>$request->slug,
-        //     'price'=>$request->price,
-        // ]);
-        // return redirect()->route('admin.product.index')->with('success', 'Produk berhasil ditambahkan');
+            $product->images()->createMany($arrImage);
+            if ($image) {
+                $product->update([
+                    'image' => $image
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+
+        return redirect()->route('admin.product.index')->with('success', 'Product berhasil ditambahkan!');
     }
 
     /**
@@ -118,43 +146,53 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, string $id)
     {
+        $product = Product::findOrFail($id);
         $validated = $request->validate([
-            "category_id" => "required|exists:categories,id",
-            "image"=> "nullable|image|mimes:png,jpg,jpeg,gif|max:2048",
-            "name" => "required|string|max:255",
-            "slug"=> "nullable|string|unique:products,slug," . $product->id,
-            "price"=> "nullable|integer|min:0",
-            "price_art_cartoon"=> "nullable|integer|min:0",
-            "price_art_paper"=> "nullable|integer|min:0",
-            "price_hvs"=> "nullable|integer|min:0",
-            "price_doft"=> "nullable|integer|min:0",
-            "price_glossy"=> "nullable|integer|min:0",
-            "price_cutting"=> "nullable|integer|min:0",
-            "short_description"=> "nullable|string",
-            "description"=> "nullable|string",
+            'category_id' => 'required|exists:categories,id',
+            'name' => 'required|string|max:60',
+            'slug' => 'nullable|string|max:60|unique:products,slug,' . $product->id,
+            'price' => 'required|numeric',
+            'image' => 'nullable|image|mimes:png,jpg,jpeg,gif|max:2048',
+            'brief_description' => 'nullable|string',
+            'description' => 'nullable|string',
+            'price_art_cartoon' => 'nullable|numeric',
+            'price_art_paper' => 'nullable|numeric',
+            'price_hvs' => 'nullable|numeric',
+            'price_doff' => 'nullable|numeric',
+            'price_glossy' => 'nullable|numeric',
+            'price_cutting' => 'nullable|numeric',
+            'price_no_cutting' => 'nullable|numeric',
         ]);
 
-        $validated["slug"] = $validated["slug"] ? Str::slug($validated["slug"]) : Str::slug($validated["name"]);
-        $validated['image'] = $request->file('image')->store('products', 'public');
-
-        
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Str::slug($validated['name']);
+        }
         if ($request->hasFile('image')) {
-            Storage::disk('public')->delete($product->image);
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            // Upload gambar baru
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
-
         $product->update($validated);
 
-
-        return redirect()->route("admin.product.index")->with("success","Product has been updated!");
+        return redirect()->route('admin.product.index')->with('success', 'Product berhasil diupdate!');
     }
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::find($id);
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+        $product->delete();
+
+        return redirect()->route('admin.product.index')->with('success', 'Product berhasil dihapus!');
     }
 }

@@ -44,7 +44,7 @@
             <label for="">Deskripsi</label>
             <!-- //editor Untuk manggil Quill -->
             <textarea name="description" cols="30" rows="10" class="d-none form-control"></textarea>
-            <div id="editor">{ !! old('description') !!}</div>
+            <div id="editor">{!! old('description') !!} </div>
         </div>
 
         <div class="row">
@@ -104,7 +104,7 @@
 
         <div class="mb-3">
             <label for="" class="form-label-custom">Gambar Produk</label>
-            <input type="file" class="form-control" name="image">
+            <input type="file" class="form-control" name="images[]">
         </div> 
         
         <div>

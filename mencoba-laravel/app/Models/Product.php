@@ -3,13 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use App\Models\Category;
+use App\Models\ProductImage;
 class Product extends Model
 {
-    protected $fillable = ['category_id', 'image', 'name', 'slug', 'price', 'brief_description', 'description'];
+    protected $fillable = [
+        'category_id',
+        'image',
+        'name',
+        'slug',
+        'price_art_paper',
+        'description',
+        'brief_description',
+        'price_art_cartoon',
+        'price_art_paper',
+        'price_hvs',
+        'price_doft',
+        'price_glossy',
+        'cutting_price',
+        // 'stock',
+        'price',
+    ];
 
-    //many to one
+    // MANY TO ONE
     public function category()
     {
         return $this->belongsTo(Category::class);

@@ -54,7 +54,7 @@
           <a class="d-inline-block" href="index.html">
             <img alt="{{ $settings['site_name'] ?? '' }} - {{ $settings['site_tagline'] }}"
              class="img-fluid"
-              src="{{ asset('storage/') . $settings['site_logo'] }}"
+              src="{{ asset('storage/' . $settings['site_logo']) }}"
               style="max-height: 48px; width: auto;" />
           </a>
         </div>
