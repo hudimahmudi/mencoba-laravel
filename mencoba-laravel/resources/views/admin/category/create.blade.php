@@ -26,7 +26,6 @@
           <div class="invalid-feedback d-block">{{ $message }}</div>
       @enderror
     </div>
-        </div>
         <div class="mb-3">
       <label for="" class="form-label-custom">Urutan tampil *</label>
       <input type="number" class="form-control" name="sort_order" value="{{ old('sort_order') }}">
@@ -38,6 +37,7 @@
           <button type="submit" class="btn-custom btn-custom-primary">
             Simpan
           </button>
+           <a href="{{ url()->previous() }}" class="btn-custom btn-custom-secondary ">Kembali</a>
     </div>
   </form>
 @endsection
